@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>빅데이터 5V 사례 분류</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Noto Sans KR",
+        sans-serif;
+      background: #f5f7fa;
+      color: #222;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .title {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .title h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .title p {
+      margin: 0;
+      color: #666;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow:
+        0 4px 18px rgba(0,0,0,0.08);
+    }
+
+    .group-area {
+      margin-bottom: 24px;
+    }
+
+    .group-area label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .group-input {
+      width: 100%;
+      height: 56px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      padding: 0 16px;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .progress {
+      text-align: center;
+      color: #555;
+      font-weight: bold;
+      margin-bottom: 18px;
+    }
+
+    .question-number {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .case {
+      background: #f1f4f8;
+      border-radius: 14px;
+      padding: 20px;
+      line-height: 1.7;
+      font-size: 17px;
+      margin-bottom: 22px;
+    }
+
+    .choices {
+      display: grid;
+      gap: 12px;
+    }
+
+    .choice {
+      position: relative;
+    }
+
+    .choice input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .choice label {
+      display: flex;
+      align-items: center;
+      min-height: 58px;
+      padding: 12px 16px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      background: white;
+    }
+
+    .choice input:checked + label {
+      border-color: #222;
+      background: #f0f0f0;
+    }
+
+    .button-area {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    button {
+      width: 100%;
+      height: 56px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .prev {
+      background: #e5e7eb;
+    }
+
+    .next {
+      background: #222;
+      color: white;
+    }
+
+    .submit {
+      background: #222;
+      color: white;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .message {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .message h2 {
+      margin-bottom: 16px;
+      font-size: 28px;
+    }
+
+    .message p {
+      color: #555;
+      line-height: 1.7;
+      font-size: 17px;
+    }
+
+    .error {
+      color: #c62828;
+      text-align: center;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+
+      .container {
+        padding: 16px 10px 30px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .title h1 {
+        font-size: 24px;
+      }
+
+      .case {
+        font-size: 16px;
+      }
+
+      .choice label {
+        font-size: 17px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="title">
+    <h1>빅데이터 5V 사례 분류</h1>
+    <p>각 사례와 가장 관련이 깊은 특징을 선택하세요.</p>
+  </div>
+
+  <div class="card" id="quizCard">
+
+    <div class="group-area">
+      <label for="groupNumber">모둠번호</label>
+
+      <input
+        id="groupNumber"
+        class="group-input"
+        type="number"
+        min="1"
+        max="99"
+        placeholder="예: 8"
+      >
+    </div>
+
+    <div class="progress" id="progress">
+      1 / 15
+    </div>
+
+    <div class="question-number" id="questionNumber">
+      1번 문항
+    </div>
+
+    <div class="case" id="caseText"></div>
+
+    <div class="choices" id="choices"></div>
+
+    <div class="error" id="error"></div>
+
+    <div class="button-area">
+
+      <button
+        class="prev"
+        id="prevButton"
+        onclick="previousQuestion()">
+        이전
+      </button>
+
+      <button
+        class="next"
+        id="nextButton"
+        onclick="nextQuestion()">
+        다음
+      </button>
+
+      <button
+        class="submit"
+        id="submitButton"
+        onclick="submitQuiz()"
+        style="display:none;">
+        제출하기
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="card message" id="completeMessage">
+
+    <h2>제출 완료</h2>
+
+    <p>
+      답변이 정상적으로 제출되었습니다.
+      <br><br>
+      <strong>
+        교사의 정답 공개를 기다려 주세요.
+      </strong>
+    </p>
+
+  </div>
+
+</div>
+
+
+<!--
+  ==================================================
+  중요:
+  아래 주소를 현재 Apps Script 웹앱 주소로 변경하세요.
+  ==================================================
+-->
+
+<script>
+
+const APPS_SCRIPT_URL =
+  "여기에_Apps_Script_웹앱_주소를_입력하세요";
+
+
+/*
+ * 학생에게 보여줄 15개 문항
+ * 정답은 이 파일에 넣지 않습니다.
+ */
+
+const questions = [
+
+  {
+    number: 1,
+    text:
+      "유튜브에는 전 세계 이용자들이 시청한 수많은 영상과 검색 기록, 좋아요 등의 데이터가 계속해서 쌓인다. 이 사례에서 가장 두드러지는 빅데이터의 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 2,
+    text:
+      "한 온라인 쇼핑몰은 수년 동안 수백만 명의 고객이 구매한 상품, 구매 횟수, 구매 금액 등의 기록을 저장하고 있다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 3,
+    text:
+      "학교에서 여러 해 동안 학생들의 출결, 시험 성적, 도서 대출, 급식 만족도 등의 기록이 계속 축적되고 있다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 4,
+    text:
+      "내비게이션 앱은 도로를 달리는 차량의 위치와 이동 속도 등의 정보를 실시간으로 받아 현재 교통 상황을 보여준다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 5,
+    text:
+      "배달앱에서는 배달 기사의 현재 위치가 이동할 때마다 계속 업데이트되어 예상 도착 시간이 실시간으로 바뀐다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 6,
+    text:
+      "주식 거래 시스템에서는 주식 가격과 거래량 등의 정보가 매우 짧은 시간 간격으로 계속 발생한다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 7,
+    text:
+      "한 학생의 스마트폰에는 문자메시지, 사진, 동영상, 음성 녹음, GPS 위치정보 등이 저장되어 있다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 8,
+    text:
+      "학교에서 학생들의 출결표, 자유롭게 작성한 설문 의견, 급식 사진, CCTV 영상 등의 데이터를 함께 활용하려고 한다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 9,
+    text:
+      "온라인 쇼핑몰에서는 고객의 별점, 상품 후기 글, 구매 기록, 상품 사진 등을 함께 분석한다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 10,
+    text:
+      "한 음식점의 온라인 후기에는 실제 이용 경험을 바탕으로 작성된 글도 있지만, 사실과 다른 내용이나 잘못된 정보가 포함된 글도 있다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 11,
+    text:
+      "학교 설문조사에서 일부 학생이 질문을 제대로 읽지 않고 임의로 답을 선택했다. 이 데이터를 분석하기 전에 가장 중요하게 고려해야 할 빅데이터의 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 12,
+    text:
+      "내비게이션의 GPS 정보에 일시적인 오류가 발생하여 차량의 위치가 실제 위치와 다르게 기록되었다. 이 문제와 가장 관련이 깊은 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 13,
+    text:
+      "학교가 학생들의 급식 만족도 데이터를 분석하여 학생들이 좋아하는 메뉴를 파악하고 다음 급식 메뉴를 개선하려고 한다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 14,
+    text:
+      "교통 데이터를 분석한 결과 특정 시간대에 교통 체증이 심하다는 사실을 발견했다. 이를 바탕으로 운전자에게 우회 경로를 추천한다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  },
+
+  {
+    number: 15,
+    text:
+      "온라인 쇼핑몰이 고객들의 과거 구매 데이터를 분석하여 각 고객에게 관심을 가질 만한 상품을 추천한다. 이 사례에서 가장 두드러지는 특징은?",
+    choices:
+      ["Volume", "Velocity", "Variety", "Veracity", "Value"]
+  }
+
+];
+
+
+let currentQuestion = 0;
+
+const answers = {};
+
+
+function renderQuestion() {
+
+  const q = questions[currentQuestion];
+
+  document.getElementById("progress").textContent =
+    (currentQuestion + 1) + " / " + questions.length;
+
+  document.getElementById("questionNumber").textContent =
+    q.number + "번 문항";
+
+  document.getElementById("caseText").textContent =
+    q.text;
+
+  const choices =
+    document.getElementById("choices");
+
+  choices.innerHTML = "";
+
+  q.choices.forEach((choice, index) => {
+
+    const div = document.createElement("div");
+
+    div.className = "choice";
+
+    const id =
+      "q" + q.number + "_" + index;
+
+    div.innerHTML = `
+      <input
+        type="radio"
+        name="question"
+        id="${id}"
+        value="${choice}"
+      >
+
+      <label for="${id}">
+        ${choice}
+      </label>
+    `;
+
+    choices.appendChild(div);
+
+  });
+
+
+  if (answers[q.number]) {
+
+    const selected =
+      document.querySelector(
+        'input[value="' +
+        answers[q.number] +
+        '"]'
+      );
+
+    if (selected) {
+      selected.checked = true;
+    }
+  }
+
+
+  document.getElementById("prevButton").disabled =
+    currentQuestion === 0;
+
+
+  if (currentQuestion === questions.length - 1) {
+
+    document.getElementById("nextButton")
+      .style.display = "none";
+
+    document.getElementById("submitButton")
+      .style.display = "block";
+
+  } else {
+
+    document.getElementById("nextButton")
+      .style.display = "block";
+
+    document.getElementById("submitButton")
+      .style.display = "none";
+  }
+
+
+  document.getElementById("error").textContent = "";
+}
+
+
+function saveCurrentAnswer() {
+
+  const selected =
+    document.querySelector(
+      'input[name="question"]:checked'
+    );
+
+  if (!selected) {
+    return false;
+  }
+
+  answers[questions[currentQuestion].number] =
+    selected.value;
+
+  return true;
+}
+
+
+function nextQuestion() {
+
+  if (!saveCurrentAnswer()) {
+
+    document.getElementById("error").textContent =
+      "답을 선택해주세요.";
+
+    return;
+  }
+
+  currentQuestion++;
+
+  renderQuestion();
+}
+
+
+function previousQuestion() {
+
+  saveCurrentAnswer();
+
+  if (currentQuestion > 0) {
+    currentQuestion--;
+    renderQuestion();
+  }
+}
+
+
+function submitQuiz() {
+
+  if (!saveCurrentAnswer()) {
+
+    document.getElementById("error").textContent =
+      "답을 선택해주세요.";
+
+    return;
+  }
+
+
+  const groupNumber =
+    document.getElementById("groupNumber")
+      .value.trim();
+
+
+  if (!groupNumber) {
+
+    document.getElementById("error").textContent =
+      "모둠번호를 입력해주세요.";
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+    return;
+  }
+
+
+  if (
+    Number(groupNumber) < 1 ||
+    Number(groupNumber) > 99
+  ) {
+
+    document.getElementById("error").textContent =
+      "모둠번호는 1~99 사이로 입력해주세요.";
+
+    return;
+  }
+
+
+  for (let i = 1; i <= 15; i++) {
+
+    if (!answers[i]) {
+
+      alert(
+        i + "번 문항의 답을 선택해주세요."
+      );
+
+      currentQuestion = i - 1;
+
+      renderQuestion();
+
+      return;
+    }
+  }
+
+
+  const payload = JSON.stringify({
+    groupNumber: groupNumber,
+    answers: answers
+  });
+
+
+  /*
+   * Google Apps Script로 전송
+   */
+
+  const form =
+    document.createElement("form");
+
+  form.method = "POST";
+
+  form.action =
+    APPS_SCRIPT_URL;
+
+  form.target =
+    "hiddenSubmitFrame";
+
+
+  const input =
+    document.createElement("input");
+
+  input.type = "hidden";
+
+  input.name = "payload";
+
+  input.value = payload;
+
+  form.appendChild(input);
+
+  document.body.appendChild(form);
+
+
+  /*
+   * 제출 버튼을 누른 즉시
+   * 학생 화면에서는 정답을 보여주지 않고
+   * 제출 완료 화면으로 변경
+   */
+
+  document.getElementById("quizCard")
+    .style.display = "none";
+
+  document.getElementById("completeMessage")
+    .style.display = "block";
+
+
+  form.submit();
+
+}
+
+
+renderQuestion();
+
+</script>
+
+
+<!--
+  제출 데이터를 Apps Script로 보내기 위한
+  숨겨진 iframe
+-->
+<iframe
+  name="hiddenSubmitFrame"
+  style="display:none;">
+</iframe>
+
+</body>
+</html>
